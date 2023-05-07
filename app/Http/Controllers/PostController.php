@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PostRequest;
 use App\Models\Post;
 use DB;
 use Illuminate\Http\Request;
@@ -22,25 +23,19 @@ class PostController extends Controller
         return view('post.newPost');
     }
 
-    public function store(Request $request)
+    public function store(PostRequest $request)
     {
-        $data = $request->validate([
-            "title" => 'required|string|max:20',
-            "content" => 'required|string|max:20',
-            "imgs.*" => 'image|mimes:png,jpg,jpeg'
-        ]);
-
         $imgsName = [];
 
-        foreach ($data['imgs'] as $imgs) {
+        foreach ($request['imgs'] as $imgs) {
 
             $imgsName[] = Storage::putFile("Images", $imgs);
         }
 
-        DB::transaction(function () use ($imgsName, $data) {
+        DB::transaction(function () use ($imgsName, $request) {
             $post = Post::create([
-                "title" => $data['title'],
-                "content" => $data['content'],
+                "title" => $request['title'],
+                "content" => $request['content'],
                 "user_id" => Auth::user()->id
             ]);
             foreach ($imgsName as $imgName) {

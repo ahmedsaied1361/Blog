@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RegistrationRequest;
 use App\Models\User;
 use GuzzleHttp\Psr7\Message;
 use Illuminate\Http\Request;
@@ -16,18 +17,11 @@ class UserController extends Controller
         return view('Auth.registration');
     }
 
-    public function register(Request $request)
+    public function register(RegistrationRequest $request)
     {
-        $data = $request->validate([
-            "firstName" => 'required|string|max:10',
-            "lastName" => 'required|string|max:10',
-            "email" => 'required|email|unique:users,email',
-            "password" => 'required|string|max:10|confirmed'
-        ]);
+        $request['password'] = bcrypt($request['password']);
 
-        $data['password'] = bcrypt($data['password']);
-
-        $user = User::create($data);
+        $user = User::create($request);
 
         session()->flash("success", "User Created Successfully");
 
